@@ -23,7 +23,7 @@ CodeceptionGenerator/
 │   └── Generator/              ... test code generator classes
 ├── input/                      ... put your selenium html files
 ├── output/                     ... test codes will be output here
-└── generate.php                ... a execution file
+└── generate.php                ... an execution file
 ~~~
 
 ## How to Generate Test Codes 
