@@ -6,7 +6,7 @@ class AcceptanceTest
     private $domDocument;
     private $inputDir;
     private $outputDir;
-    protected $template = <<<EOF
+    private $template = <<<EOF
 <?php
 
 class {{outputClassName}}Cest
@@ -20,7 +20,7 @@ class {{outputClassName}}Cest
 EOF;
 
     /**
-     * Test constructor.
+     * AcceptanceTest constructor.
      *
      * @param \DOMDocument $domDocument
      * @param string $inputDir
