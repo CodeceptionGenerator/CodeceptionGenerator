@@ -4,12 +4,16 @@ namespace CodeceptionGenerator\Lib\Generator;
 class AcceptanceTest
 {
     protected $domDocument;
+
     protected $inputDir;
+
     protected $outputDir;
+
     protected $excludingStrings = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
     ];
+
     protected $template = <<<EOF
 <?php
 
@@ -22,7 +26,9 @@ class {{outputClassName}}
     }
 }
 EOF;
+
     const REGEX_INPUT_FILE_PATHS = '*.html';
+
     const REGEX_INPUT_FILE_NAME = '/\A[A-Za-z][A-Za-z0-9_]+\.html\z/';
 
     /**
