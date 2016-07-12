@@ -3,13 +3,21 @@ namespace CodeceptionGenerator\Lib\Generator;
 
 class AcceptanceTest
 {
-    private $domDocument;
-    private $inputDir;
-    private $outputDir;
-    private $template = <<<EOF
+    protected $domDocument;
+
+    protected $inputDir;
+
+    protected $outputDir;
+
+    protected $excludingStrings = [
+        '<?xml version="1.0" encoding="UTF-8"?>',
+        '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
+    ];
+
+    protected $template = <<<EOF
 <?php
 
-class {{outputClassName}}Cest
+class {{outputClassName}}
 {
     // TODO Please rename the following function name.
     public function xxxTest(\AcceptanceTester \$I)
@@ -18,6 +26,10 @@ class {{outputClassName}}Cest
     }
 }
 EOF;
+
+    const REGEX_INPUT_FILE_PATHS = '*.html';
+
+    const REGEX_INPUT_FILE_NAME = '/\A[A-Za-z][A-Za-z0-9_]+\.html\z/';
 
     /**
      * AcceptanceTest constructor.
@@ -60,7 +72,7 @@ EOF;
                 $outputFilePath = $this->getOutputFilePath($outputClassName);
 
                 // Get HTML string.
-                $htmlString = $this->getContentsFromFilePath($inputFilePath);
+                $htmlString = $this->getContentsByFilePath($inputFilePath);
 
                 // Convert HTML string to an array.
                 $htmlArray = $this->convertHtmlToArray($htmlString);
@@ -90,7 +102,7 @@ EOF;
      *
      * @return string
      */
-    private function getBaseDir()
+    protected function getBaseDir()
     {
         return dirname(dirname(dirname(__DIR__))) . '/';
     }
@@ -98,7 +110,7 @@ EOF;
     /**
      * Confirm an input directory.
      */
-    private function confirmInputDir()
+    protected function confirmInputDir()
     {
         if (!file_exists($this->inputDir)) {
             throw new \Exception('There is not a directory of input files.');
@@ -108,7 +120,7 @@ EOF;
     /**
      * Confirm an output directory. if it does not exists, create it.
      */
-    private function confirmOutputDir()
+    protected function confirmOutputDir()
     {
         if (!file_exists($this->outputDir)) {
             mkdir($this->outputDir, 0777);
@@ -121,7 +133,7 @@ EOF;
      * @param $inputFilePaths
      * @throws \Exception
      */
-    private function confirmInputFilePaths($inputFilePaths)
+    protected function confirmInputFilePaths($inputFilePaths)
     {
         if (count($inputFilePaths) === 0) {
             throw new \Exception('There are not any input files.');
@@ -133,20 +145,20 @@ EOF;
      *
      * @return array
      */
-    private function getInputFilePaths()
+    protected function getInputFilePaths()
     {
-        return glob($this->inputDir . '*.html');
+        return glob($this->inputDir . self::REGEX_INPUT_FILE_PATHS);
     }
 
     /**
-     * Get an input file name.
+     * Get a file name by the file path.
      *
-     * @param $inputFilePath
+     * @param $filePath
      * @return string
      */
-    private function getInputFileName($inputFilePath)
+    protected function getFileName($filePath)
     {
-        return basename($inputFilePath);
+        return basename($filePath);
     }
 
     /**
@@ -156,45 +168,25 @@ EOF;
      * @param $inputFileName
      * @throws Exception
      */
-    private function validateFileName($inputFileName)
+    protected function validateFileName($inputFileName)
     {
-        if (preg_match('/\A[A-Za-z][A-Za-z0-9_]+\.html\z/', $inputFileName) === 1) {
-            return;
+        if (preg_match(self::REGEX_INPUT_FILE_NAME, $inputFileName) !== 1) {
+            throw new Exception('The file name is invalid. ' . $inputFileName);
         }
-
-        throw new Exception('The file name is invalid. ' . $inputFileName);
     }
 
     /**
      * Get an output class name.
      *
      * @param $inputFileName
+     * @param $outputClassSuffix
      * @return string
      */
-    private function getOutputClassName($inputFileName)
+    protected function getOutputClassName($inputFileName, $outputClassSuffix = 'Cest')
     {
         $tmpOutputClassName = str_replace('.html', '', $inputFileName);
 
-        return $this->camelize($tmpOutputClassName);
-    }
-
-    /**
-     * Convert camel case.
-     *
-     * @param $string
-     * @return string
-     */
-    private function camelize($string)
-    {
-        if (is_string($string) === false || strlen($string) === 0) {
-            return '';
-        }
-
-        $string = str_replace(['_', '-'], ' ', $string);
-        $string = ucwords($string);
-        $string = str_replace(' ', '', $string);
-
-        return $string;
+        return $this->camelize($tmpOutputClassName) . $outputClassSuffix;
     }
 
     /**
@@ -203,9 +195,9 @@ EOF;
      * @param $outputClassName
      * @return string
      */
-    private function getOutputFilePath($outputClassName)
+    protected function getOutputFilePath($outputClassName)
     {
-        return $this->outputDir . $outputClassName . 'Cest.php';
+        return $this->outputDir . $outputClassName . '.php';
     }
 
     /**
@@ -215,15 +207,15 @@ EOF;
      * @return string
      * @throws Exception
      */
-    private function getContentsFromFilePath($filePath)
+    protected function getContentsByFilePath($filePath)
     {
         $contents = file_get_contents($filePath);
 
-        if ($contents !== false) {
-            return $contents;
+        if ($contents === false) {
+            throw new Exception('Failed to get HTML\'s contents.');
         }
 
-        throw new Exception('Failed to get HTML\'s contents.');
+        return $contents;
     }
 
     /**
@@ -232,18 +224,13 @@ EOF;
      * @param $htmlString
      * @return array
      */
-    private function convertHtmlToArray($htmlString)
+    protected function convertHtmlToArray($htmlString)
     {
         // A measure against garbling
         $htmlString = mb_convert_encoding($htmlString, 'HTML-ENTITIES', 'UTF-8');
 
         // Exclude some unnecessary strings
-        $excludingString = [
-            '<?xml version="1.0" encoding="UTF-8"?>',
-            '<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">'
-        ];
-
-        $htmlString = str_replace($excludingString, '', $htmlString);
+        $htmlString = str_replace($this->excludingStrings, '', $htmlString);
 
         // Convert HTML string into XML string
         $this->domDocument->loadHTML($htmlString);
@@ -266,7 +253,7 @@ EOF;
      * @return string
      * @throws Exception
      */
-    private function getUrl($array)
+    protected function getUrl($array)
     {
         $exceptionMessage = 'There is not a url in the html file.';
 
@@ -296,7 +283,7 @@ EOF;
      * @return array
      * @throws Exception
      */
-    private function getRows($array)
+    protected function getRows($array)
     {
         $exceptionMessage = 'There is not a test case in the html file.';
 
@@ -326,7 +313,7 @@ EOF;
      * @param $rows
      * @return string
      */
-    private function getTestCode($outputClassName, $rows)
+    protected function getTestCode($outputClassName, $rows)
     {
         $testCode = $this->convertTestCode($rows);
         $result = str_replace('{{outputClassName}}', $outputClassName, $this->template);
@@ -341,7 +328,7 @@ EOF;
      * @param $rows
      * @return string
      */
-    private function convertTestCode($rows)
+    protected function convertTestCode($rows)
     {
         $result = [];
         $indent = '        ';
@@ -361,28 +348,28 @@ EOF;
             $target = ($command === 'open') ? $row[1] : $this->formatTarget($row[1]);
             $value = $this->formatValue($row[2]);
 
-            if (strpos($target, '>') !== false) {
+            if ($command !== 'open' && (strpos($target, '>') !== false || strpos($target, '/') !== false)) {
                 $result[] = $indent . '// TODO X Path is deprecated.';
             }
 
             switch ($command) {
                 case 'open':
-                    $result[] = $indent . "\$I->amOnPage('" . $target . "');";
+                    $result[] = $indent . "\$I->amOnPage('$target');";
                     break;
                 case 'click':
-                    $result[] = $indent . "\$I->click('" . $target . "');";
+                    $result[] = $indent . "\$I->click('$target');";
                     break;
                 case 'type':
-                    $result[] = $indent . "\$I->fillField('" . $target . "', '" . $value . "');";
+                    $result[] = $indent . "\$I->fillField('$target', '$value');";
                     break;
                 case 'select':
-                    $result[] = $indent . "\$I->selectOption('" . $target . "', '" . $value . "');";
+                    $result[] = $indent . "\$I->selectOption('$target', '$value');";
                     break;
                 case 'clickAndWait':
                     $result[] = $indent . '// TODO Please refer to the following examples and implement "waiting".';
                     $result[] = $indent . "// \$I->waitForJS('return $.active == 0;', 60);";
                     $result[] = $indent . "// \$I->waitForText('foo', 30);";
-                    $result[] = $indent . "\$I->click('" . $target . "');";
+                    $result[] = $indent . "\$I->click('$target');";
                     break;
             }
         }
@@ -396,11 +383,13 @@ EOF;
      * @param $target
      * @return string
      */
-    private function formatTarget($target)
+    protected function formatTarget($target)
     {
         if (!is_string($target) || strlen($target) === 0) {
             return '';
         }
+
+        $target = str_replace("'", "\'", $target);
 
         if (strpos($target, 'id=') === 0) {
             return str_replace('id=', '#', $target);
@@ -423,7 +412,7 @@ EOF;
      * @param $value
      * @return string
      */
-    private function formatValue($value)
+    protected function formatValue($value)
     {
         if (is_array($value) && count($value) === 0) {
             return '';
@@ -443,11 +432,30 @@ EOF;
      * @param $outputFilePath
      * @throws \Exception
      */
-    private function confirmOutputResult($outputResult, $outputFilePath)
+    protected function confirmOutputResult($outputResult, $outputFilePath)
     {
         if ($outputResult === false) {
             $message = 'This program failed to output the following file. ' . $outputFilePath;
             throw new \Exception($message);
         }
+    }
+
+    /**
+     * Convert camel case.
+     *
+     * @param $string
+     * @return string
+     */
+    protected function camelize($string)
+    {
+        if (is_string($string) === false || strlen($string) === 0) {
+            return '';
+        }
+
+        $string = str_replace(['_', '-'], ' ', $string);
+        $string = ucwords($string);
+        $string = str_replace(' ', '', $string);
+
+        return $string;
     }
 }
