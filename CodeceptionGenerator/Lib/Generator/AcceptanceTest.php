@@ -145,14 +145,14 @@ EOF;
     }
 
     /**
-     * Get an input file name.
+     * Get a file name by the file path.
      *
-     * @param $inputFilePath
+     * @param $filePath
      * @return string
      */
-    protected function getInputFileName($inputFilePath)
+    protected function getFileName($filePath)
     {
-        return basename($inputFilePath);
+        return basename($filePath);
     }
 
     /**
