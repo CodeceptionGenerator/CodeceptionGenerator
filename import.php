@@ -4,4 +4,4 @@ use CodeceptionGenerator\Lib\Importer\Csv;
 $csvImporter = new Csv();
 $filePath = __DIR__ . '/input/sample.csv';
 $array = $csvImporter->convertArray($filePath);
-var_dump($array);
+// var_dump($array);
