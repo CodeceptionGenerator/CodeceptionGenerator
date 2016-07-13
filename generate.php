@@ -1,4 +1,5 @@
 <?php
+require_once('./CodeceptionGenerator/Helper/String.php');
 require_once('./CodeceptionGenerator/Lib/Generator/AcceptanceTest.php');
 use CodeceptionGenerator\Lib\Generator\AcceptanceTest;
 $domDocument = new \DOMDocument();
