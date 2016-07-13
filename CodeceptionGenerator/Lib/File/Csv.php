@@ -1,5 +1,5 @@
 <?php
-namespace CodeceptionGenerator\Lib\Importer;
+namespace CodeceptionGenerator\Lib\File;
 
 class Csv
 {
@@ -20,9 +20,8 @@ class Csv
     public function convertArray($filePath = '', $skipEmptyRowflag = true, $useHeaderFlag = true)
     {
         try {
-            $filePath = !empty($filePath) ? $filePath : $this->filePath;
             $this->confirmFilePath($filePath);
-            $fileName = $this->getFileName($filePath);
+            $fileName = $this->getFileNameByFilePath($filePath);
             $this->validateFileName($fileName);
 
             $file = new \SplFileObject($filePath);
@@ -64,26 +63,6 @@ class Csv
     }
 
     /**
-     * Set a file path.
-     *
-     * @param $filePath
-     */
-    public function setFilePath($filePath)
-    {
-        $this->filePath = $filePath;
-    }
-
-    /**
-     * Get a file path.
-     *
-     * @return string
-     */
-    public function getFilePath()
-    {
-        return $this->filePath;
-    }
-
-    /**
      * Confirm a file path.
      *
      * @param $filePath
@@ -106,7 +85,7 @@ class Csv
      * @param $filePath
      * @return string
      */
-    protected function getFileName($filePath)
+    protected function getFileNameByFilePath($filePath)
     {
         return basename($filePath);
     }
