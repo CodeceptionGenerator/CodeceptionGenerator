@@ -62,7 +62,7 @@ EOF;
             $this->confirmInputFilePaths($inputFilePaths);
 
             foreach ($inputFilePaths as $inputFilePath) {
-                $inputFileName = $this->getInputFileName($inputFilePath);
+                $inputFileName = $this->getFileNameByFilePath($inputFilePath);
 
                 // Validate an input file name.
                 $this->validateFileName($inputFileName);
@@ -75,7 +75,7 @@ EOF;
                 $htmlString = $this->getContentsByFilePath($inputFilePath);
 
                 // Convert HTML string to an array.
-                $htmlArray = $this->convertHtmlToArray($htmlString);
+                $htmlArray = $this->convertHtmlStringToArray($htmlString);
 
                 // Get a URL from HTML array.
                 $url = $this->getUrl($htmlArray);
@@ -156,7 +156,7 @@ EOF;
      * @param $filePath
      * @return string
      */
-    protected function getFileName($filePath)
+    protected function getFileNameByFilePath($filePath)
     {
         return basename($filePath);
     }
@@ -186,7 +186,7 @@ EOF;
     {
         $tmpOutputClassName = str_replace('.html', '', $inputFileName);
 
-        return $this->camelize($tmpOutputClassName) . $outputClassSuffix;
+        return camel_case($tmpOutputClassName) . $outputClassSuffix;
     }
 
     /**
@@ -224,7 +224,7 @@ EOF;
      * @param $htmlString
      * @return array
      */
-    protected function convertHtmlToArray($htmlString)
+    protected function convertHtmlStringToArray($htmlString)
     {
         // A measure against garbling
         $htmlString = mb_convert_encoding($htmlString, 'HTML-ENTITIES', 'UTF-8');
@@ -438,24 +438,5 @@ EOF;
             $message = 'This program failed to output the following file. ' . $outputFilePath;
             throw new \Exception($message);
         }
-    }
-
-    /**
-     * Convert camel case.
-     *
-     * @param $string
-     * @return string
-     */
-    protected function camelize($string)
-    {
-        if (is_string($string) === false || strlen($string) === 0) {
-            return '';
-        }
-
-        $string = str_replace(['_', '-'], ' ', $string);
-        $string = ucwords($string);
-        $string = str_replace(' ', '', $string);
-
-        return $string;
     }
 }
