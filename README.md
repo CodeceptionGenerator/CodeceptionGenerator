@@ -19,7 +19,9 @@ $ git clone https://github.com/CodeceptionGenerator/CodeceptionGenerator.git
 
 ~~~
 CodeceptionGenerator/
-├── Lib/
+├── Helper/                     ... helper methods
+├── Lib/                        ... libraries
+│   ├── File/                   ... file classes
 │   └── Generator/              ... test code generator classes
 ├── input/                      ... put your selenium html files
 ├── output/                     ... test codes will be output here
