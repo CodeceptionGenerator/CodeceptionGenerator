@@ -171,7 +171,7 @@ EOF;
     protected function validateFileName($inputFileName)
     {
         if (preg_match(self::REGEX_INPUT_FILE_NAME, $inputFileName) !== 1) {
-            throw new Exception('The file name is invalid. ' . $inputFileName);
+            throw new \Exception('The file name is invalid. ' . $inputFileName);
         }
     }
 
@@ -212,7 +212,7 @@ EOF;
         $contents = file_get_contents($filePath);
 
         if ($contents === false) {
-            throw new Exception('Failed to get HTML\'s contents.');
+            throw new \Exception('Failed to get HTML\'s contents.');
         }
 
         return $contents;
@@ -258,19 +258,19 @@ EOF;
         $exceptionMessage = 'There is not a url in the html file.';
 
         if (!isset($array['head'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['head']['link'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['head']['link']['@attributes'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['head']['link']['@attributes']['href'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         return $array['head']['link']['@attributes']['href'];
@@ -288,19 +288,19 @@ EOF;
         $exceptionMessage = 'There is not a test case in the html file.';
 
         if (!isset($array['body'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['body']['table'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['body']['table']['tbody'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         if (!isset($array['body']['table']['tbody']['tr'])) {
-            throw new Exception($exceptionMessage);
+            throw new \Exception($exceptionMessage);
         }
 
         return $array['body']['table']['tbody']['tr'];
